@@ -21,6 +21,8 @@
 package org.broadleafcommerce.core.payment.service;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.broadleafcommerce.common.payment.PaymentAdditionalFieldType;
 import org.broadleafcommerce.common.payment.PaymentGatewayType;
 import org.broadleafcommerce.common.payment.PaymentType;
@@ -50,7 +52,6 @@ import org.broadleafcommerce.profile.core.service.AddressService;
 import org.broadleafcommerce.profile.core.service.CountryService;
 import org.broadleafcommerce.profile.core.service.PhoneService;
 import org.broadleafcommerce.profile.core.service.StateService;
-import org.mortbay.log.Log;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -69,6 +70,8 @@ import javax.annotation.Resource;
  */
 @Service("blPaymentGatewayCheckoutService")
 public class DefaultPaymentGatewayCheckoutService implements PaymentGatewayCheckoutService {
+    
+    private static final Log LOG = LogFactory.getLog(DefaultPaymentGatewayCheckoutService.class);
 
     @Resource(name = "blOrderService")
     protected OrderService orderService;
@@ -233,9 +236,12 @@ public class DefaultPaymentGatewayCheckoutService implements PaymentGatewayCheck
             billingAddress.setCity(billToDTO.getAddressCityLocality());
 
             //TODO: what happens if State and Country cannot be found?
-            State state = stateService.findStateByAbbreviation(billToDTO.getAddressStateRegion());
+            State state = null;
+            if(billToDTO.getAddressStateRegion() != null) {
+                state = stateService.findStateByAbbreviation(billToDTO.getAddressStateRegion());
+            }
             if (state == null) {
-                Log.warn("The given state from the response: " + billToDTO.getAddressStateRegion() + " could not be found"
+                LOG.warn("The given state from the response: " + billToDTO.getAddressStateRegion() + " could not be found"
                         + " as a state abbreviation in BLC_STATE");
             }
             billingAddress.setState(state);
@@ -244,7 +250,7 @@ public class DefaultPaymentGatewayCheckoutService implements PaymentGatewayCheck
 
             Country country = countryService.findCountryByAbbreviation(billToDTO.getAddressCountryCode());
             if (country == null) {
-                Log.warn("The given country from the response: " + billToDTO.getAddressCountryCode() + " could not be found"
+                LOG.warn("The given country from the response: " + billToDTO.getAddressCountryCode() + " could not be found"
                         + " as a country abbreviation in BLC_COUNTRY");
             }
             billingAddress.setCountry(country);
@@ -271,10 +277,13 @@ public class DefaultPaymentGatewayCheckoutService implements PaymentGatewayCheck
             shippingAddress.setAddressLine1(shipToDTO.getAddressLine1());
             shippingAddress.setAddressLine2(shipToDTO.getAddressLine2());
             shippingAddress.setCity(shipToDTO.getAddressCityLocality());
-
-            State state = stateService.findStateByAbbreviation(shipToDTO.getAddressStateRegion());
+            
+            State state = null;
+            if(shipToDTO.getAddressStateRegion() != null) {
+                state = stateService.findStateByAbbreviation(shipToDTO.getAddressStateRegion());
+            }
             if (state == null) {
-                Log.warn("The given state from the response: " + shipToDTO.getAddressStateRegion() + " could not be found"
+                LOG.warn("The given state from the response: " + shipToDTO.getAddressStateRegion() + " could not be found"
                         + " as a state abbreviation in BLC_STATE");
             }
             shippingAddress.setState(state);
@@ -283,7 +292,7 @@ public class DefaultPaymentGatewayCheckoutService implements PaymentGatewayCheck
 
             Country country = countryService.findCountryByAbbreviation(shipToDTO.getAddressCountryCode());
             if (country == null) {
-                Log.warn("The given country from the response: " + shipToDTO.getAddressCountryCode() + " could not be found"
+                LOG.warn("The given country from the response: " + shipToDTO.getAddressCountryCode() + " could not be found"
                         + " as a country abbreviation in BLC_COUNTRY");
             }
             shippingAddress.setCountry(country);
@@ -325,27 +334,31 @@ public class DefaultPaymentGatewayCheckoutService implements PaymentGatewayCheck
         orderPaymentService.delete(payment);
     }
 
-    //TODO: this should return something more than just a String
     @Override
     public String initiateCheckout(Long orderId) throws Exception{
-        Order order = orderService.findOrderById(orderId);
+        Order order = orderService.findOrderById(orderId, true);
         if (order == null || order instanceof NullOrderImpl) {
             throw new IllegalArgumentException("Could not order with id " + orderId);
         }
         
+        CheckoutResponse response;
+
         try {
-            CheckoutResponse response = checkoutService.performCheckout(order);
+            response = checkoutService.performCheckout(order);
         } catch (CheckoutException e) {
-            //TODO: wrap the exception or put CheckoutException in common
             throw new Exception(e);
         }
 
-        return order.getOrderNumber();
+        if (response.getOrder().getOrderNumber() == null) {
+            LOG.error("Order Number for Order ID: " + order.getId() + " is null.");
+        }
+
+        return response.getOrder().getOrderNumber();
     }
 
     @Override
     public String lookupOrderNumberFromOrderId(PaymentResponseDTO responseDTO) {
-        Order order = orderService.findOrderById(Long.parseLong(responseDTO.getOrderId()));
+        Order order = orderService.findOrderById(Long.parseLong(responseDTO.getOrderId()), true);
         if (order == null) {
             throw new IllegalArgumentException("An order with ID " + responseDTO.getOrderId() + " cannot be found for the" +
             		" given payment response.");

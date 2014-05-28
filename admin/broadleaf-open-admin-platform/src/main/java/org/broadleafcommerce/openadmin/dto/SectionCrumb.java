@@ -46,9 +46,19 @@ public class SectionCrumb implements Serializable {
     }
 
     @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("SectionCrumb{");
+        sb.append("sectionIdentifier='").append(sectionIdentifier).append('\'');
+        sb.append(", sectionId='").append(sectionId).append('\'');
+        sb.append('}');
+        return sb.toString();
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof SectionCrumb)) return false;
+        if (o == null) return false;
+        if (!getClass().isAssignableFrom(o.getClass())) return false;
 
         SectionCrumb that = (SectionCrumb) o;
 

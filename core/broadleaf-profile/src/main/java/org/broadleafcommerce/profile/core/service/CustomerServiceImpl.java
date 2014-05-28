@@ -115,7 +115,7 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Override
     public Customer saveCustomer(Customer customer) {
-        return saveCustomer(customer, true);
+        return saveCustomer(customer, customer.isRegistered());
     }
 
     @Override
@@ -268,6 +268,11 @@ public class CustomerServiceImpl implements CustomerService {
     @Override
     public Customer readCustomerByUsername(String username) {
         return customerDao.readCustomerByUsername(username);
+    }
+
+    @Override
+    public Customer readCustomerByUsername(String username, Boolean cacheable) {
+        return customerDao.readCustomerByUsername(username, cacheable);
     }
 
     @Override

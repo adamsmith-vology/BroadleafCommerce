@@ -140,6 +140,22 @@ public class MapStructure implements Serializable, PersistencePerspectiveItem {
     }
 
     @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("MapStructure{");
+        sb.append("keyClassName='").append(keyClassName).append('\'');
+        sb.append(", mapKeyValueProperty='").append(mapKeyValueProperty).append('\'');
+        sb.append(", keyPropertyName='").append(keyPropertyName).append('\'');
+        sb.append(", keyPropertyFriendlyName='").append(keyPropertyFriendlyName).append('\'');
+        sb.append(", valueClassName='").append(valueClassName).append('\'');
+        sb.append(", mapProperty='").append(mapProperty).append('\'');
+        sb.append(", deleteValueEntity=").append(deleteValueEntity);
+        sb.append(", manyToField='").append(manyToField).append('\'');
+        sb.append(", mutable=").append(mutable);
+        sb.append('}');
+        return sb.toString();
+    }
+
+    @Override
     public PersistencePerspectiveItem clonePersistencePerspectiveItem() {
         MapStructure mapStructure = new MapStructure();
         mapStructure.keyClassName = keyClassName;
@@ -158,7 +174,8 @@ public class MapStructure implements Serializable, PersistencePerspectiveItem {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof MapStructure)) return false;
+        if (o == null) return false;
+        if (!getClass().isAssignableFrom(o.getClass())) return false;
 
         MapStructure that = (MapStructure) o;
 

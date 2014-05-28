@@ -134,7 +134,16 @@ public class Property implements Serializable {
 
     @Override
     public String toString() {
-        return getName() + ": " + getValue();
+        final StringBuilder sb = new StringBuilder("Property{");
+        sb.append("name='").append(name).append('\'');
+        String temp = value;
+        if (temp != null && temp.length() > 200) {
+            temp = temp.substring(0,199) + "...";
+        }
+        sb.append(", value='").append(temp).append('\'');
+        sb.append(", isDirty=").append(isDirty);
+        sb.append('}');
+        return sb.toString();
     }
 
     @Override
@@ -152,7 +161,7 @@ public class Property implements Serializable {
             return true;
         if (obj == null)
             return false;
-        if (getClass() != obj.getClass())
+        if (!getClass().isAssignableFrom(obj.getClass()))
             return false;
         Property other = (Property) obj;
         if (metadata == null || metadata instanceof CollectionMetadata || ((BasicFieldMetadata) metadata).getMergedPropertyType() == null) {

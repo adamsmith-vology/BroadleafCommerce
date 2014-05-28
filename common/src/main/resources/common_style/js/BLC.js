@@ -110,6 +110,22 @@ var BLC = (function($) {
 	    return extractedData;
     }
     
+    function get(options, callback) {
+        if (options == null) {
+            options = {};
+        }
+        options.type = 'GET';
+        return BLC.ajax(options, callback);
+    }
+
+    function post(options, callback) {
+        if (options == null) {
+            options = {};
+        }
+        options.type = 'POST';
+        return BLC.ajax(options, callback);
+    }
+    
     function ajax(options, callback) {
         if (options.type == null) {
             options.type = 'GET';
@@ -133,6 +149,11 @@ var BLC = (function($) {
                     if (csrfToken != null) {
                         options.data['csrfToken'] = csrfToken;
                     }
+                }
+            } else if (!options.data) {
+                var csrfToken = getCsrfToken();
+                if (csrfToken) {
+                    options.data = { 'csrfToken': csrfToken }
                 }
             }
         }
@@ -165,18 +186,37 @@ var BLC = (function($) {
     }
     
     function trackAjaxAnalytics(options, data) {
-        if (typeof _gaq == 'undefined') {
-            return;
-        }
-
-        _gaq.push(['_trackPageview', options.url]);
-        console.log('Tracked GA pageview: ' + options.url);
-        
-        if (options.additionalAnalyticsEvents) {
-            for (var i = 0; i < options.additionalAnalyticsEvents.length; i++) {
-                _gaq.push(options.additionalAnalyticsEvents[i]);
-                console.log('Tracked additional GA event: ' + options.additionalAnalyticsEvents[i]);
+        try {
+            if (typeof _gaq != 'undefined') {
+                _gaq.push(['_trackPageview', options.url]);
+                console.log('Tracked GA pageview: ' + options.url);
+                
+                if (options.additionalAnalyticsEvents) {
+                    for (var i = 0; i < options.additionalAnalyticsEvents.length; i++) {
+                        _gaq.push(options.additionalAnalyticsEvents[i]);
+                        console.log('Tracked additional GA event: ' + options.additionalAnalyticsEvents[i]);
+                    }
+                }
             }
+            
+            if (typeof ga != 'undefined') {
+                var trackers = ga.getAll();
+                for (var i = 0; i < trackers.length; i++) {
+                    var tracker = trackers[i];
+                    console.log('Tracked GA pageview: ' + options.url + ' for tracker: ' + tracker.get('name'));
+                    tracker.send('pageview', options.url);
+                    
+                    if (options.additionalAnalyticsEvents) {
+                        for (var i = 0; i < options.additionalAnalyticsEvents.length; i++) {
+                            var event = options.additionalAnalyticsEvents[i];
+                            tracker.send(event)
+                            console.log('Tracked additional GA event: ' + event + ' for tracker: ' + tracker.get('name'));
+                        }
+                    }
+                }
+            }
+        } catch (err) {
+            console.log(err);
         }
     }
         
@@ -249,6 +289,8 @@ var BLC = (function($) {
         addInternalDataHandler : addInternalDataHandler,
         redirectIfNecessary : redirectIfNecessary,
         getExtraData : getExtraData,
+        get : get,
+        post : post,
         ajax : ajax,
         defaultErrorHandler : defaultErrorHandler,
         serializeObject : serializeObject,

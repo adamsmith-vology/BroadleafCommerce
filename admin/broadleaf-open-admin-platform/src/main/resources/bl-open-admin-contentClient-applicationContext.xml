@@ -115,8 +115,19 @@
                 <ref bean="blRuleFieldPersistenceProvider"/>                
                 <ref bean="blMapFieldPersistenceProvider"/>
                 <ref bean="blMoneyFieldPersistenceProvider"/>
-                <ref bean="blMediaFieldPersistenceProvider"/>                
+                <ref bean="blMediaFieldPersistenceProvider"/>
+                <ref bean="blCollectionFieldPersistenceProvider" />
             </list>
         </property>
     </bean>
+    
+    <!-- Some front-facing modules rely on admin-level security as well; ensure that the row level security providers
+        are included in the client-side portion of the admin -->
+    <bean id="blRowLevelSecurityProviders" class="org.springframework.beans.factory.config.ListFactoryBean" >
+        <property name="sourceList">
+            <list>
+            </list>
+        </property>
+    </bean>
+    
 </beans>

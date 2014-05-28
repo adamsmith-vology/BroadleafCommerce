@@ -58,6 +58,8 @@ public class BroadleafRequestProcessor extends AbstractBroadleafWebRequestProces
 
     private static String REQUEST_DTO_PARAM_NAME = BroadleafRequestFilter.REQUEST_DTO_PARAM_NAME;
     public static String REPROCESS_PARAM_NAME = "REPROCESS_BLC_REQUEST";
+    
+    public static final String SITE_ENFORCE_PRODUCTION_WORKFLOW_KEY = "site.enforce.production.workflow.update";
 
     @Resource(name = "blSiteResolver")
     protected BroadleafSiteResolver siteResolver;
@@ -83,17 +85,18 @@ public class BroadleafRequestProcessor extends AbstractBroadleafWebRequestProces
     @Value("${thymeleaf.threadLocalCleanup.enabled}")
     protected boolean thymeleafThreadLocalCleanupEnabled = true;
 
-    @Value("${site.enforce.production.workflow.update}")
-    protected boolean enforceProductionWorkflowUpdate = false;
-
+    @Value("${" + SITE_ENFORCE_PRODUCTION_WORKFLOW_KEY + ":false}")
+    protected boolean enforceSiteProductionWorkflowUpdate = false;
+    
     @Resource(name="blEntityExtensionManagers")
     protected Map<String, ExtensionManager> entityExtensionManagers;
     
     @Override
     public void process(WebRequest request) {
-        Site site = siteResolver.resolveSite(request);
-
         BroadleafRequestContext brc = new BroadleafRequestContext();
+        brc.getAdditionalProperties().putAll(entityExtensionManagers);
+        
+        Site site = siteResolver.resolveSite(request);
         
         brc.setSite(site);
         brc.setWebRequest(request);
@@ -102,8 +105,8 @@ public class BroadleafRequestProcessor extends AbstractBroadleafWebRequestProces
         }
         brc.setAdmin(false);
 
-        if (enforceProductionWorkflowUpdate) {
-            brc.getAdditionalProperties().put("site.enforce.production.workflow.update", enforceProductionWorkflowUpdate);
+        if (enforceSiteProductionWorkflowUpdate) {
+            brc.getAdditionalProperties().put(SITE_ENFORCE_PRODUCTION_WORKFLOW_KEY, enforceSiteProductionWorkflowUpdate);
         }
 
         BroadleafRequestContext.setBroadleafRequestContext(brc);
@@ -176,7 +179,6 @@ public class BroadleafRequestProcessor extends AbstractBroadleafWebRequestProces
             brc.setAdminUserId(Long.parseLong(adminUserId));
         }
 
-        brc.getAdditionalProperties().putAll(entityExtensionManagers);
     }
 
     @Override

@@ -30,7 +30,7 @@ import java.util.List;
 import javax.annotation.Resource;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
+import javax.persistence.TypedQuery;
 
 @Repository("blCustomerDao")
 public class CustomerDaoImpl implements CustomerDao {
@@ -47,18 +47,28 @@ public class CustomerDaoImpl implements CustomerDao {
     }
 
     @Override
-    public Customer readCustomerByUsername(String username) {        
-        List<Customer> customers = readCustomersByUsername(username);
+    public Customer readCustomerByUsername(String username) {
+        return readCustomerByUsername(username, true);
+    }
+
+    @Override
+    public Customer readCustomerByUsername(String username, Boolean cacheable) {
+        List<Customer> customers = readCustomersByUsername(username, cacheable);
         return customers == null || customers.isEmpty() ? null : customers.get(0);
     }
-   
+
     @Override
     public List<Customer> readCustomersByUsername(String username) {
-        Query query = em.createNamedQuery("BC_READ_CUSTOMER_BY_USER_NAME");
+        return readCustomersByUsername(username, true);
+    }
+
+    @Override
+    public List<Customer> readCustomersByUsername(String username, Boolean cacheable) {
+        TypedQuery<Customer> query = em.createNamedQuery("BC_READ_CUSTOMER_BY_USER_NAME", Customer.class);
         query.setParameter("username", username);
-        query.setHint(QueryHints.HINT_CACHEABLE, true);
+        query.setHint(QueryHints.HINT_CACHEABLE, cacheable);
         query.setHint(QueryHints.HINT_CACHE_REGION, "query.Order");
-        return query.getResultList();        
+        return query.getResultList();
     }
 
     @Override
@@ -69,7 +79,7 @@ public class CustomerDaoImpl implements CustomerDao {
     
     @Override
     public List<Customer> readCustomersByEmail(String emailAddress) {
-        Query query = em.createNamedQuery("BC_READ_CUSTOMER_BY_EMAIL");
+        TypedQuery<Customer> query = em.createNamedQuery("BC_READ_CUSTOMER_BY_EMAIL", Customer.class);
         query.setParameter("email", emailAddress);
         query.setHint(QueryHints.HINT_CACHEABLE, true);
         query.setHint(QueryHints.HINT_CACHE_REGION, "query.Order");

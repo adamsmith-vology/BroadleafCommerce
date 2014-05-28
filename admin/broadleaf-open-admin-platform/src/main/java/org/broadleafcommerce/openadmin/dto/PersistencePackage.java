@@ -127,10 +127,18 @@ public class PersistencePackage implements Serializable, StateDescriptor {
         if (ArrayUtils.isEmpty(customCriteria)) {
             return -1;
         }
-        Arrays.sort(customCriteria);
-        return Arrays.binarySearch(customCriteria, criteria);
-    }
+        
+        for (int i = 0; i < customCriteria.length; i++) {
+            if (customCriteria[i] != null && customCriteria[i].equals(criteria)) {
+                return i;
+            } else if (customCriteria[i] == null && criteria == null) {
+                return i;
+            }
+        }
 
+        return -1;
+    }
+    
     public Entity getEntity() {
         return entity;
     }
@@ -233,9 +241,30 @@ public class PersistencePackage implements Serializable, StateDescriptor {
     }
 
     @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("PersistencePackage{");
+        sb.append("ceilingEntityFullyQualifiedClassname='").append(ceilingEntityFullyQualifiedClassname).append('\'');
+        sb.append(", securityCeilingEntityFullyQualifiedClassname='").append
+                (securityCeilingEntityFullyQualifiedClassname).append('\'');
+        sb.append(", sectionEntityField='").append(sectionEntityField).append('\'');
+        sb.append(", fetchTypeFullyQualifiedClassname='").append(fetchTypeFullyQualifiedClassname).append('\'');
+        sb.append(", persistencePerspective=").append(persistencePerspective);
+        sb.append(", customCriteria=").append(Arrays.toString(customCriteria));
+        sb.append(", entity=").append(entity);
+        sb.append(", csrfToken='").append(csrfToken).append('\'');
+        sb.append(", requestingEntityName='").append(requestingEntityName).append('\'');
+        sb.append(", subPackages=").append(subPackages);
+        sb.append(", validateUnsubmittedProperties=").append(validateUnsubmittedProperties);
+        sb.append(", sectionCrumbs=").append(Arrays.toString(sectionCrumbs));
+        sb.append('}');
+        return sb.toString();
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof PersistencePackage)) return false;
+        if (o == null) return false;
+        if (!getClass().isAssignableFrom(o.getClass())) return false;
 
         PersistencePackage that = (PersistencePackage) o;
 

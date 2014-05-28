@@ -23,6 +23,8 @@ import net.sf.ehcache.Cache;
 import net.sf.ehcache.CacheManager;
 import net.sf.ehcache.Element;
 
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.broadleafcommerce.common.cache.CacheStatType;
@@ -102,11 +104,16 @@ public class ResourceBundlingServiceImpl implements ResourceBundlingService {
     }
     
     protected Resource readBundle(String versionedBundleName) {
-        File bundleFile = fileService.getResource(getFilePath(versionedBundleName));
+        File bundleFile = fileService.getLocalResource(getResourcePath(versionedBundleName));
         return new FileSystemResource(bundleFile);
     }
     
-    protected String getFilePath(String name) {
+    /**
+     * Returns the resource path for the given <b>name</b> in URL-format (meaning, / separators)
+     * @param name
+     * @return
+     */
+    protected String getResourcePath(String name) {
         return "bundles/" + name;
     }
     
@@ -160,7 +167,7 @@ public class ResourceBundlingServiceImpl implements ResourceBundlingService {
     
     protected void saveBundle(Resource resource) {
         FileWorkArea tempWorkArea = fileService.initializeWorkArea();
-        String tempFilename = tempWorkArea.getFilePathLocation() + getFilePath(resource.getDescription());
+        String tempFilename = FilenameUtils.concat(tempWorkArea.getFilePathLocation(), FilenameUtils.separatorsToSystem(getResourcePath(resource.getDescription())));
         File tempFile = new File(tempFilename);
         if (!tempFile.getParentFile().exists()) {
             if (!tempFile.getParentFile().mkdirs()) {
@@ -169,21 +176,23 @@ public class ResourceBundlingServiceImpl implements ResourceBundlingService {
                 }
             }
         }
+        
         BufferedOutputStream out = null;
+        InputStream ris = null;
         try {
+            ris = resource.getInputStream();
             out = new BufferedOutputStream(new FileOutputStream(tempFile));
-            StreamUtils.copy(resource.getInputStream(), out);
+            StreamUtils.copy(ris, out);
+            
+            ris.close();
+            out.close();
+            
             fileService.addOrUpdateResource(tempWorkArea, tempFile, true);
         } catch (IOException e) {
             throw new RuntimeException(e);
         } finally {
-            if (out != null) {
-                try {
-                    out.close();
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-            }
+            IOUtils.closeQuietly(ris);
+            IOUtils.closeQuietly(out);
             fileService.closeWorkArea(tempWorkArea);
         }
     }

@@ -44,7 +44,7 @@ public class TaxType implements Serializable, BroadleafEnumerationType {
     public static final TaxType COUNTRY = new TaxType("COUNTRY", "Country");
     public static final TaxType SHIPPING = new TaxType("SHIPPING", "Shipping");
 
-    // Used by SimpleTaxModule to represent total taxes owed.
+    // Used by SimpleTaxProvider to represent total taxes owed.
     public static final TaxType COMBINED = new TaxType("COMBINED", "Combined");
 
     public static TaxType getInstance(final String type) {
@@ -92,7 +92,7 @@ public class TaxType implements Serializable, BroadleafEnumerationType {
             return true;
         if (obj == null)
             return false;
-        if (getClass() != obj.getClass())
+        if (!getClass().isAssignableFrom(obj.getClass()))
             return false;
         TaxType other = (TaxType) obj;
         if (type == null) {

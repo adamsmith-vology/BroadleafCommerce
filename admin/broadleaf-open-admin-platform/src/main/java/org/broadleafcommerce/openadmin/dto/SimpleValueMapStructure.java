@@ -71,6 +71,16 @@ public class SimpleValueMapStructure extends MapStructure {
     }
 
     @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("SimpleValueMapStructure{");
+        sb.append(super.toString());
+        sb.append("valuePropertyName='").append(valuePropertyName).append('\'');
+        sb.append(", valuePropertyFriendlyName='").append(valuePropertyFriendlyName).append('\'');
+        sb.append('}');
+        return sb.toString();
+    }
+
+    @Override
     public PersistencePerspectiveItem clonePersistencePerspectiveItem() {
         SimpleValueMapStructure mapStructure = new SimpleValueMapStructure();
         mapStructure.setKeyClassName(getKeyClassName());
@@ -88,7 +98,8 @@ public class SimpleValueMapStructure extends MapStructure {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof SimpleValueMapStructure)) return false;
+        if (o == null) return false;
+        if (!getClass().isAssignableFrom(o.getClass())) return false;
         if (!super.equals(o)) return false;
 
         SimpleValueMapStructure that = (SimpleValueMapStructure) o;

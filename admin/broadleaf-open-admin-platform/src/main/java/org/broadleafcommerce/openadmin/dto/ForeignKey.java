@@ -19,10 +19,10 @@
  */
 package org.broadleafcommerce.openadmin.dto;
 
-import java.io.Serializable;
-
 import org.broadleafcommerce.common.presentation.client.ForeignKeyRestrictionType;
 import org.broadleafcommerce.openadmin.dto.visitor.PersistencePerspectiveItemVisitor;
+
+import java.io.Serializable;
 
 
 /**
@@ -135,16 +135,18 @@ public class ForeignKey implements Serializable, PersistencePerspectiveItem {
         visitor.visit(this);
     }
 
+    @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append(manyToField);
-        sb.append(foreignKeyClass);
-        sb.append(currentValue);
-        sb.append(dataSourceName);
-        sb.append(restrictionType);
-        sb.append(displayValueProperty);
-        sb.append(originatingField);
-
+        final StringBuilder sb = new StringBuilder("ForeignKey{");
+        sb.append("manyToField='").append(manyToField).append('\'');
+        sb.append(", originatingField='").append(originatingField).append('\'');
+        sb.append(", foreignKeyClass='").append(foreignKeyClass).append('\'');
+        sb.append(", currentValue='").append(currentValue).append('\'');
+        sb.append(", dataSourceName='").append(dataSourceName).append('\'');
+        sb.append(", restrictionType=").append(restrictionType);
+        sb.append(", displayValueProperty='").append(displayValueProperty).append('\'');
+        sb.append(", mutable=").append(mutable);
+        sb.append('}');
         return sb.toString();
     }
 
@@ -170,7 +172,8 @@ public class ForeignKey implements Serializable, PersistencePerspectiveItem {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof ForeignKey)) return false;
+        if (o == null) return false;
+        if (!getClass().isAssignableFrom(o.getClass())) return false;
 
         ForeignKey that = (ForeignKey) o;
 

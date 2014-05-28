@@ -21,6 +21,7 @@ package org.broadleafcommerce.common.site.domain;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.broadleafcommerce.common.admin.domain.AdminMainEntity;
 import org.broadleafcommerce.common.extensibility.jpa.copy.DirectCopyTransform;
 import org.broadleafcommerce.common.extensibility.jpa.copy.DirectCopyTransformMember;
 import org.broadleafcommerce.common.extensibility.jpa.copy.DirectCopyTransformTypes;
@@ -70,7 +71,7 @@ import javax.persistence.Table;
 @DirectCopyTransform({
         @DirectCopyTransformMember(templateTokens = DirectCopyTransformTypes.MULTITENANT_SITEMARKER)
 })
-public class SiteImpl implements Site, Status {
+public class SiteImpl implements Site, Status, AdminMainEntity {
 
     private static final long serialVersionUID = 1L;
     private static final Log LOG = LogFactory.getLog(SiteImpl.class);
@@ -111,6 +112,15 @@ public class SiteImpl implements Site, Status {
     @Column(name = "DEACTIVATED")
     @AdminPresentation(friendlyName = "SiteImpl_Deactivated", order = 4, gridOrder = 4, group = "SiteImpl_Site", excluded = true)
     protected Boolean deactivated = false;
+    
+    
+    /**************************************************/
+    /**
+     * Adding additional properties to this class or dynamically weaving in properties will have to contribute to the extension
+     * manager for {@link SiteServiceImpl}, {@link SiteServiceExtensionHandler}.
+     */
+    /**************************************************/
+    
 
     @Embedded
     protected ArchiveStatus archiveStatus = new ArchiveStatus();
@@ -190,6 +200,11 @@ public class SiteImpl implements Site, Status {
        }
        archiveStatus.setArchived(archived);
     }
+    
+    @Override
+    public ArchiveStatus getArchiveStatus() {
+        return archiveStatus;
+    }
 
     @Override
     public boolean isActive() {
@@ -254,6 +269,11 @@ public class SiteImpl implements Site, Status {
         }
 
         return clone;
+    }
+
+    @Override
+    public String getMainEntityName() {
+        return getName();
     }
 }
 
